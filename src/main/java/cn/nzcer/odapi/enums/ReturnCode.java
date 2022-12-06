@@ -9,7 +9,7 @@ package cn.nzcer.odapi.enums;
 public enum ReturnCode {
     RC200(200, "操作成功"),
     RC444(444, "操作失败"),
-    RC(404, "资源不存在");
+    RC404(404, "资源不存在");
     private final Integer code;
     private final String message;
 

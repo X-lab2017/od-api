@@ -14,12 +14,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 /**
  * @project: od-api
- * @ClassName: ResponseAdvice
+ * @ClassName: BaseResponseBodyAdvice
  * @author: nzcer
  * @creat: 2022/12/5 19:58
+ * @description: 返回结果统一处理
  */
 @RestControllerAdvice
-public class ResponseAdvice implements ResponseBodyAdvice<Object> {
+public class BaseResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -33,7 +34,12 @@ public class ResponseAdvice implements ResponseBodyAdvice<Object> {
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         if (body instanceof String) {
+            //这段代码一定要加，如果Controller直接返回String的话，SpringBoot是直接返回，故我们需要手动转换成json。
             return objectMapper.writeValueAsString(ResultData.success(body));
+        }
+        // 如果返回的结果是ResultData对象，直接返回即可。
+        if (body instanceof ResultData) {
+            return body;
         }
         return ResultData.success(body);
     }
