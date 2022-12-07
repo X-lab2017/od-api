@@ -2,9 +2,9 @@ server:
   port: 8080
 spring:
   redis:
-    host: 139.196.112.101
+    host: localhost
     port: 6380
-    password: xlab0229
+    password: password123
     database: 0
     lettuce:
       pool:
