@@ -12,3 +12,15 @@ spring:
         max-wait: -1ms
         max-idle: 8
         min-idle: 0
+  datasource:
+    driver-class-name:  com.mysql.jdbc.Driver
+    username: root
+    password: password123
+    url: jdbc:mysql://localhost:3306/od_api?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+mybatis:
+  type-aliases-package: cn.nzcer.odapi.mapper
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

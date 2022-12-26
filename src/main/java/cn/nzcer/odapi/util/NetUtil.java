@@ -2,6 +2,7 @@ package cn.nzcer.odapi.util;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author: nzcer
  * @creat: 2022/12/1 16:22
  */
+@Slf4j
 public class NetUtil {
     static OkHttpClient client = new OkHttpClient.Builder().readTimeout(100, TimeUnit.SECONDS).build();
     // 同步请求
@@ -32,7 +34,9 @@ public class NetUtil {
             if (response.isSuccessful()) {
                 return JSONObject.parseObject(res);
             } else {
-                throw new IOException("Unexpected code " + response);
+                //throw new IOException("Unexpected code " + response);
+                //log.error("Unexpected code " + response);
+                return null;
             }
         }
     }
