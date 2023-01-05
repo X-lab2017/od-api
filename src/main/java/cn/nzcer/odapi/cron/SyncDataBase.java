@@ -1,7 +1,6 @@
 package cn.nzcer.odapi.cron;
 
 import cn.nzcer.odapi.entity.RepoMetric;
-import cn.nzcer.odapi.enums.RepoMetricEnum;
 import cn.nzcer.odapi.service.RepoMetricService;
 import cn.nzcer.odapi.util.DateUtil;
 import cn.nzcer.odapi.util.NetUtil;
@@ -112,11 +111,14 @@ public class SyncDataBase {
         return repoNames;
     }
 
-    // 每月 5 日凌晨 1 点启动定时任务
-    @Scheduled(cron = "0 0 1 5 * ?")
+    // 每月 4 日凌晨 1 点启动定时任务
+    @Scheduled(cron = "0 0 1 4 * ?")
     public void insertAllRepoMetrics() throws IOException {
+        log.info("定时任务启动:" + new Date());
+        log.info("清空 repo_metric 表");
         repoMetricService.truncateRepoMetric();
         Set<String> allRepo = getAllRepo();
+        log.info("获取到的 repo 数量为: " + allRepo.size());
         int cnt = 0;
         String reg = "(?<=/)\\w+(?=\\.json)";
         for (String repo : allRepo) {
@@ -148,11 +150,10 @@ public class SyncDataBase {
             if (repoMetricList.size() == 0) {
                 continue;
             }
+            log.info("插入第 " + cnt + " 个 repo 的数据：" + repo);
             repoMetricService.insertBatchRepoMetric(repoMetricList);
             cnt++;
-            if (cnt == 10 || cnt == 100 || cnt == 1000 || cnt == 5000) {
-                log.info("已插入仓库数：" + cnt);
-            }
         }
+        log.info("定时任务完成:" + new Date());
     }
 }
