@@ -13,10 +13,16 @@ spring:
         max-idle: 8
         min-idle: 0
   datasource:
-    driver-class-name:  com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.jdbc.Driver
     username: root
     password: password123
     url: jdbc:mysql://localhost:3306/od_api?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    hikari:
+      minimumIdle: 10
+      maximum-pool-size: 60
+      idleTimeout: 120000
+      connection-timeout: 300000
+      leak-detection-threshold: 300000
 mybatis:
   type-aliases-package: cn.nzcer.odapi.mapper
   mapper-locations: classpath:mapper/*.xml
