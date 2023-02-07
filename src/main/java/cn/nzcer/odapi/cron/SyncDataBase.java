@@ -1,7 +1,9 @@
 package cn.nzcer.odapi.cron;
 
 import cn.nzcer.odapi.entity.RepoMetric;
+import cn.nzcer.odapi.entity.RepoStatistic;
 import cn.nzcer.odapi.service.RepoMetricService;
+import cn.nzcer.odapi.service.RepoStatisticService;
 import cn.nzcer.odapi.util.DateUtil;
 import cn.nzcer.odapi.util.NetUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -18,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -33,6 +36,8 @@ public class SyncDataBase {
     @Resource
     RepoMetricService repoMetricService;
 
+    @Resource
+    RepoStatisticService repoStatisticService;
     /**
      * 获取 https://open-leaderboard.x-lab.info/ 中上榜的 repo name
      * @return
@@ -155,5 +160,35 @@ public class SyncDataBase {
             cnt++;
         }
         log.info("定时任务完成:" + new Date());
+    }
+
+    // 每月 5 日凌晨 1 点启动定时任务
+    @Scheduled(cron = "0 0 1 5 * ?")
+    public void insertAllRepoStarAndFork() throws IOException {
+        List<Map<String, String>> repoInfo = repoMetricService.getRepoInfo();
+        List<RepoStatistic> list = new ArrayList<>();
+        log.info(String.valueOf(repoInfo.size()));
+        int cnt = 1;
+        String token = "your-github-token";
+        for (Map<String, String> map : repoInfo) {
+            String orgName = map.get("orgName");
+            String repoName = map.get("repoName");
+            String url = " https://api.github.com/repos/" + orgName + "/" + repoName;
+            log.info(url);
+            JSONObject jsonObject = NetUtil.doGetWithToken(url,token);
+            if (jsonObject == null) {
+                continue;
+            }
+            Integer star = jsonObject.getInteger("stargazers_count");
+            Integer fork = jsonObject.getInteger("forks_count");
+            RepoStatistic r1 = new RepoStatistic(orgName,repoName,"stargazers_count",star);
+            RepoStatistic r2 = new RepoStatistic(orgName,repoName,"forks_count",fork);
+            list.add(r1);
+            list.add(r2);
+            log.info("插入第 " + cnt + " 个 repo 的数据：" + orgName + "/" + repoName);
+            repoStatisticService.insertBatchRepoStatistic(list);
+            list.clear();
+            cnt++;
+        }
     }
 }

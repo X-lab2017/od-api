@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.nzcer.odapi.mapper.RepoStatisticMapper">
+
+    <resultMap id="BaseResultMap" type="cn.nzcer.odapi.entity.RepoStatistic">
+        <result property="orgName" column="org_name" jdbcType="VARCHAR"/>
+        <result property="repoName" column="repo_name" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="value" column="t_value" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <insert id="insertBatchRepoStatistic" parameterType="java.util.List">
+        insert into repo_statistic (org_name, repo_name, type, t_value)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.orgName,jdbcType=VARCHAR}, #{item.repoName,jdbcType=VARCHAR}, #{item.type,jdbcType=VARCHAR}, #{item.value,jdbcType=INTEGER})
+        </foreach>
+    </insert>
+
+    <update id="truncateRepoStatistic">
+        truncate table repo_statistic
+    </update>
+
+
+
+</mapper>

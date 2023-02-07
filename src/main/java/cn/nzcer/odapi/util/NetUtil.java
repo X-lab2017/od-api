@@ -41,6 +41,23 @@ public class NetUtil {
         }
     }
 
+    public static JSONObject doGetWithToken(String url, String token) throws IOException {
+        Request request = new Request.Builder().header("Authorization", "token " + token)
+                .url(url)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            String res = response.body().string();
+            if (response.isSuccessful()) {
+                return JSONObject.parseObject(res);
+            } else {
+                //throw new IOException("Unexpected code " + response);
+                //log.error("Unexpected code " + response);
+                return null;
+            }
+        }
+    }
+
+
     // 异步请求
     //public static void asyncRequest(String url) {
     //    Request request = new Request.Builder().url(url).build();

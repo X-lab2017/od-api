@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,5 +67,11 @@ public class RepoMetricServiceImpl implements RepoMetricService {
             return matcher.group();
         }
         return null;
+    }
+
+    @Override
+    public List<Map<String, String>> getRepoInfo() {
+        List<Map<String, String>> maps = repoMetricMapper.queryOrgNameAndRepoName();
+        return maps;
     }
 }

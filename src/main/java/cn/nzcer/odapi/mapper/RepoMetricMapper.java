@@ -4,6 +4,7 @@ import cn.nzcer.odapi.entity.RepoMetric;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @project: od-api
@@ -21,4 +22,6 @@ public interface RepoMetricMapper {
 
     // Mybatis 原生批量插入，提高效率
     int insertBatchRepoMetric(List<RepoMetric> list);
+
+    List<Map<String,String>> queryOrgNameAndRepoName();
 }

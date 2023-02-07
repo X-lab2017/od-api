@@ -21,12 +21,23 @@
         insert into repo_metric (org_name, repo_name, t_month, type, t_value)
         values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.orgName,jdbcType=VARCHAR}, #{item.repoName,jdbcType=VARCHAR},  #{item.tMonth,jdbcType=DATE}, #{item.type,jdbcType=VARCHAR}, #{item.tValue,jdbcType=DOUBLE})
+            (#{item.orgName,jdbcType=VARCHAR}, #{item.repoName,jdbcType=VARCHAR}, #{item.tMonth,jdbcType=DATE},
+            #{item.type,jdbcType=VARCHAR}, #{item.tValue,jdbcType=DOUBLE})
         </foreach>
     </insert>
 
     <update id="truncateRepoMetric">
         truncate table repo_metric
     </update>
+
+    <resultMap id="RepoInfo" type="java.util.HashMap">
+        <result property="orgName" column="org_name" jdbcType="VARCHAR"/>
+        <result property="repoName" column="repo_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryOrgNameAndRepoName" resultMap="RepoInfo">
+        select distinct org_name, repo_name
+        from repo_metric
+    </select>
 
 </mapper>
