@@ -3,6 +3,7 @@ package cn.nzcer.odapi.service;
 import cn.nzcer.odapi.entity.RepoMetric;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @project: od-api
@@ -33,4 +34,6 @@ public interface RepoMetricService {
     List<String> getRepoMetricUrls(String orgName, String repoName);
 
     String getRepoMetricTypeFromUrl(String url, String reg);
+
+    List<Map<String, String>> getRepoInfo();
 }
