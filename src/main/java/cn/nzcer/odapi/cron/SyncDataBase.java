@@ -1,5 +1,6 @@
 package cn.nzcer.odapi.cron;
 
+import cn.nzcer.odapi.config.GitHubApiConfig;
 import cn.nzcer.odapi.entity.RepoMetric;
 import cn.nzcer.odapi.entity.RepoStatistic;
 import cn.nzcer.odapi.service.RepoMetricService;
@@ -116,10 +117,10 @@ public class SyncDataBase {
         return repoNames;
     }
 
-    // 每月 4 日凌晨 1 点启动定时任务
-    @Scheduled(cron = "0 0 1 4 * ?")
+    // 每月 3 日凌晨 1 点启动定时任务
+    @Scheduled(cron = "0 0 1 3 * ?")
     public void insertAllRepoMetrics() throws IOException {
-        log.info("定时任务启动:" + new Date());
+        log.info("Repo Metrics 定时任务启动:" + new Date());
         log.info("清空 repo_metric 表");
         repoMetricService.truncateRepoMetric();
         Set<String> allRepo = getAllRepo();
@@ -162,14 +163,17 @@ public class SyncDataBase {
         log.info("定时任务完成:" + new Date());
     }
 
-    // 每月 5 日凌晨 1 点启动定时任务
-    @Scheduled(cron = "0 0 1 5 * ?")
+    // 每日凌晨 5 点启动定时任务
+    @Scheduled(cron = "0 0 5 * * ?")
     public void insertAllRepoStarAndFork() throws IOException {
+        log.info("Repo Statistic 定时任务启动:" + new Date());
+        log.info("清空  repo_statistic 表");
+        repoStatisticService.truncateRepoStatistic();
         List<Map<String, String>> repoInfo = repoMetricService.getRepoInfo();
         List<RepoStatistic> list = new ArrayList<>();
         log.info(String.valueOf(repoInfo.size()));
         int cnt = 1;
-        String token = "your-github-token";
+        String token = GitHubApiConfig.token;
         for (Map<String, String> map : repoInfo) {
             String orgName = map.get("orgName");
             String repoName = map.get("repoName");
