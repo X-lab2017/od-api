@@ -1,8 +1,11 @@
 package cn.nzcer.odapi.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import cn.nzcer.odapi.entity.GitHubToken;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @project: od-api
@@ -12,16 +15,8 @@ import org.springframework.stereotype.Component;
  * @description: GitHub API 配置类
  */
 @Component
+@Data
 @ConfigurationProperties(prefix = "github")
 public class GitHubApiConfig {
-    @Value("${github.token}")
-    public static String token;
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        GitHubApiConfig.token = token;
-    }
+    private List<GitHubToken> tokens;
 }

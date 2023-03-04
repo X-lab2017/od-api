@@ -1,6 +1,7 @@
 package cn.nzcer.odapi.cron;
 
 import cn.nzcer.odapi.config.GitHubApiConfig;
+import cn.nzcer.odapi.entity.GitHubToken;
 import cn.nzcer.odapi.entity.RepoMetric;
 import cn.nzcer.odapi.entity.RepoStatistic;
 import cn.nzcer.odapi.service.RepoMetricService;
@@ -23,6 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.stream.Collectors;
 
 /**
  * @project: od-api
@@ -39,11 +43,16 @@ public class SyncDataBase {
 
     @Resource
     RepoStatisticService repoStatisticService;
+
+    @Resource
+    GitHubApiConfig gitHubApiConfig;
+
     /**
      * 获取 https://open-leaderboard.x-lab.info/ 中上榜的 repo name
+     *
      * @return
      */
-    public Set<String> getAllRepo() throws IOException{
+    public Set<String> getAllRepo() throws IOException {
         String urlPrefix = "https://xlab-open-source.oss-cn-beijing.aliyuncs.com/open_leaderboard/";
         String[] metrics = {"activity", "open_rank"};
         String[] regions = {"chinese", "global"};
@@ -163,36 +172,68 @@ public class SyncDataBase {
         log.info("定时任务完成:" + new Date());
     }
 
+    volatile int cnt = 1;
+
     // 每日凌晨 5 点启动定时任务
     @Scheduled(cron = "0 0 5 * * ?")
-    public void insertAllRepoStarAndFork() throws IOException {
+    public void insertAllRepoStarAndFork() throws InterruptedException, BrokenBarrierException {
         log.info("Repo Statistic 定时任务启动:" + new Date());
         log.info("清空  repo_statistic 表");
         repoStatisticService.truncateRepoStatistic();
         List<Map<String, String>> repoInfo = repoMetricService.getRepoInfo();
-        List<RepoStatistic> list = new ArrayList<>();
         log.info(String.valueOf(repoInfo.size()));
-        int cnt = 1;
-        String token = GitHubApiConfig.token;
+        List<String> tokens = getTokens();
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(repoInfo.size());
+        int totalRepo = 0;
         for (Map<String, String> map : repoInfo) {
-            String orgName = map.get("orgName");
-            String repoName = map.get("repoName");
-            String url = " https://api.github.com/repos/" + orgName + "/" + repoName;
-            log.info(url);
-            JSONObject jsonObject = NetUtil.doGetWithToken(url,token);
-            if (jsonObject == null) {
-                continue;
-            }
-            Integer star = jsonObject.getInteger("stargazers_count");
-            Integer fork = jsonObject.getInteger("forks_count");
-            RepoStatistic r1 = new RepoStatistic(orgName,repoName,"stargazers_count",star);
-            RepoStatistic r2 = new RepoStatistic(orgName,repoName,"forks_count",fork);
-            list.add(r1);
-            list.add(r2);
-            log.info("插入第 " + cnt + " 个 repo 的数据：" + orgName + "/" + repoName);
-            repoStatisticService.insertBatchRepoStatistic(list);
-            list.clear();
-            cnt++;
+            totalRepo++;
+            List<RepoStatistic> list = new ArrayList<>();
+            int finalTotalRepo = totalRepo;
+            Thread thread = new Thread(() -> {
+                try {
+                    insertOneRepoStarAndFork(map, tokens.get(finalTotalRepo % tokens.size()), list);
+                } catch (IOException e) {
+                    log.warn(e.getMessage(), e);
+                } finally {
+                    try {
+                        cyclicBarrier.await();
+                    } catch (Exception e) {
+                        log.info(e.getMessage(), e);
+                    }
+                }
+            });
+            thread.start();
         }
+        cyclicBarrier.await();
+        log.info("所有子线程执行完毕");
+    }
+
+
+    private void insertOneRepoStarAndFork(Map<String, String> map, String token, List<RepoStatistic> list) throws IOException {
+        String orgName = map.get("orgName");
+        String repoName = map.get("repoName");
+        String url = " https://api.github.com/repos/" + orgName + "/" + repoName;
+        log.info(url);
+        JSONObject jsonObject = NetUtil.doGetWithToken(url, token);
+        if (jsonObject == null) {
+            return;
+        }
+        Integer star = jsonObject.getInteger("stargazers_count");
+        Integer fork = jsonObject.getInteger("forks_count");
+        RepoStatistic r1 = new RepoStatistic(orgName, repoName, "stargazers_count", star);
+        RepoStatistic r2 = new RepoStatistic(orgName, repoName, "forks_count", fork);
+        list.add(r1);
+        list.add(r2);
+        repoStatisticService.insertBatchRepoStatistic(list);
+        log.info("插入第 " + cnt + " 个 repo 的数据：" + orgName + "/" + repoName);
+        list.clear();
+        cnt++;
+    }
+
+
+    public List<String> getTokens() {
+        List<GitHubToken> tokens = gitHubApiConfig.getTokens();
+        List<String> collect = tokens.stream().map(GitHubToken::getToken).collect(Collectors.toList());
+        return collect;
     }
 }
