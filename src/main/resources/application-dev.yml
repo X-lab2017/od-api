@@ -29,6 +29,19 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
+    #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# GitHub API Token 配置
 github:
-  token: your-personal-github-token
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  tokens:
+    - id: 1
+      owner: "zhicheng"
+      token: "ghp_token1"
+    - id: 2
+      owner: "tyn"
+      token: "ghp_token2"
+    - id: 3
+      owner: "zhiwei"
+      token: "ghp_token3"
+    - id: 4
+      owner: "xiaoya"
+      token: "ghp_token4"

@@ -11,6 +11,7 @@ import cn.nzcer.odapi.util.NetUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -126,55 +127,83 @@ public class SyncDataBase {
         return repoNames;
     }
 
-    // 每月 3 日凌晨 1 点启动定时任务
+    // 每月 3 日凌晨 1 点启动定时任务更新仓库的所有指标数据
     @Scheduled(cron = "0 0 1 3 * ?")
-    public void insertAllRepoMetrics() throws IOException {
+    public void insertAllRepoMetrics() throws IOException, BrokenBarrierException, InterruptedException {
         log.info("Repo Metrics 定时任务启动:" + new Date());
         log.info("清空 repo_metric 表");
         repoMetricService.truncateRepoMetric();
         Set<String> allRepo = getAllRepo();
         log.info("获取到的 repo 数量为: " + allRepo.size());
-        int cnt = 0;
-        String reg = "(?<=/)\\w+(?=\\.json)";
+        List<String> tokens = getTokens();
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(allRepo.size());
+        int repoCnt = 0;
         for (String repo : allRepo) {
-            String[] split = repo.split("/");
-            String orgName = split[0];
-            String repoName = split[1];
-            List<String> urls = repoMetricService.getRepoMetricUrls(orgName,repoName);
-            List<RepoMetric> repoMetricList = new ArrayList<>();
-            for (String url : urls) {
-                JSONObject jo = NetUtil.doGet(url);
-                if (jo == null) {
-                    continue;
-                }
-                jo.forEach((key, value) -> {
-                    RepoMetric repoMetric = new RepoMetric();
-                    repoMetric.setOrgName(orgName);
-                    repoMetric.setRepoName(repoName);
-                    repoMetric.setTMonth(DateUtil.parse(key));
-                    repoMetric.setType(repoMetricService.getRepoMetricTypeFromUrl(url, reg));
-                    if (value instanceof Integer) {
-                        repoMetric.setTValue(BigDecimal.valueOf((Integer)value).doubleValue());
-                    } else {
-                        repoMetric.setTValue(((BigDecimal)value).doubleValue());
+            String token = tokens.get(repoCnt % tokens.size());
+            Thread thread = new Thread(() -> {
+                try {
+                    insertOneRepoMetric(repo, token);
+                } catch (IOException e) {
+                    log.warn(e.getMessage(), e);
+                } finally {
+                    try {
+                        cyclicBarrier.await();
+                    } catch (Exception e) {
+                        log.warn(e.getMessage(), e);
                     }
-                    //RepoMetric repoMetric = new RepoMetric(orgName,repoName, DateUtil.parse(key), repoMetricService.getRepoMetricTypeFromUrl(url,reg), ((BigDecimal)value).doubleValue());
-                    repoMetricList.add(repoMetric);
-                });
-            }
-            if (repoMetricList.size() == 0) {
-                continue;
-            }
-            log.info("插入第 " + cnt + " 个 repo 的数据：" + repo);
-            repoMetricService.insertBatchRepoMetric(repoMetricList);
-            cnt++;
+                }
+            });
+            thread.start();
+            repoCnt++;
         }
+        cyclicBarrier.await();
+        //int cnt = 0;
+        //String reg = "(?<=/)\\w+(?=\\.json)";
+        //for (String repo : allRepo) {
+        //    String[] split = repo.split("/");
+        //    String orgName = split[0];
+        //    String repoName = split[1];
+        //    List<String> urls = repoMetricService.getRepoMetricUrls(orgName,repoName);
+        //    List<RepoMetric> repoMetricList = new ArrayList<>();
+        //    for (String url : urls) {
+        //        JSONObject jo = NetUtil.doGet(url);
+        //        if (jo == null) {
+        //            continue;
+        //        }
+        //        jo.forEach((key, value) -> {
+        //            RepoMetric repoMetric = new RepoMetric();
+        //            repoMetric.setOrgName(orgName);
+        //            repoMetric.setRepoName(repoName);
+        //            Date metricTime = DateUtil.parse(key);
+        //            if (metricTime != null) {
+        //                repoMetric.setTMonth(metricTime);
+        //            } else {
+        //                // 跳过本次循环
+        //                return;
+        //            }
+        //            repoMetric.setType(repoMetricService.getRepoMetricTypeFromUrl(url, reg));
+        //            if (value instanceof Integer) {
+        //                repoMetric.setTValue(BigDecimal.valueOf((Integer)value).doubleValue());
+        //            } else {
+        //                repoMetric.setTValue(((BigDecimal)value).doubleValue());
+        //            }
+        //            //RepoMetric repoMetric = new RepoMetric(orgName,repoName, DateUtil.parse(key), repoMetricService.getRepoMetricTypeFromUrl(url,reg), ((BigDecimal)value).doubleValue());
+        //            repoMetricList.add(repoMetric);
+        //        });
+        //    }
+        //    if (repoMetricList.size() == 0) {
+        //        continue;
+        //    }
+        //    log.info("插入第 " + cnt + " 个 repo 的数据：" + repo);
+        //    repoMetricService.insertBatchRepoMetric(repoMetricList);
+        //    cnt++;
+        //}
         log.info("定时任务完成:" + new Date());
     }
 
     volatile int cnt = 1;
 
-    // 每日凌晨 5 点启动定时任务
+    // 每日凌晨 5 点启动定时任务更新所有仓库的 star 和 fork 数据
     @Scheduled(cron = "0 0 5 * * ?")
     public void insertAllRepoStarAndFork() throws InterruptedException, BrokenBarrierException {
         log.info("Repo Statistic 定时任务启动:" + new Date());
@@ -230,6 +259,47 @@ public class SyncDataBase {
         cnt++;
     }
 
+
+    private void insertOneRepoMetric(String repo, String token) throws IOException {
+        String reg = "(?<=/)\\w+(?=\\.json)";
+        String[] split = repo.split("/");
+        String orgName = split[0];
+        String repoName = split[1];
+        List<String> urls = repoMetricService.getRepoMetricUrls(orgName, repoName);
+        List<RepoMetric> repoMetricList = new ArrayList<>();
+        for (String url : urls) {
+            JSONObject jo = NetUtil.doGetWithToken(url, token);
+            if (jo == null) {
+                continue;
+            }
+            jo.forEach((key, value) -> {
+                RepoMetric repoMetric = new RepoMetric();
+                repoMetric.setOrgName(orgName);
+                repoMetric.setRepoName(repoName);
+                Date metricTime = DateUtil.parse(key);
+                if (metricTime != null) {
+                    repoMetric.setTMonth(metricTime);
+                } else {
+                    // 跳过本次循环
+                    return;
+                }
+                repoMetric.setType(repoMetricService.getRepoMetricTypeFromUrl(url, reg));
+                if (value instanceof Integer) {
+                    repoMetric.setTValue(BigDecimal.valueOf((Integer) value).doubleValue());
+                } else {
+                    repoMetric.setTValue(((BigDecimal) value).doubleValue());
+                }
+                //RepoMetric repoMetric = new RepoMetric(orgName,repoName, DateUtil.parse(key), repoMetricService.getRepoMetricTypeFromUrl(url,reg), ((BigDecimal)value).doubleValue());
+                repoMetricList.add(repoMetric);
+            });
+        }
+        if (repoMetricList.size() == 0) {
+            return;
+        }
+        repoMetricService.insertBatchRepoMetric(repoMetricList);
+        log.info("插入第 " + cnt + " 个 repo 的数据：" + orgName + "/" + repoName);
+        cnt++;
+    }
 
     public List<String> getTokens() {
         List<GitHubToken> tokens = gitHubApiConfig.getTokens();
