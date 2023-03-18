@@ -28,7 +28,8 @@ class SyncDataBaseTest {
     SyncDataBase syncDataBase;
 
     @Test
-    void insertAllRepoMetrics() throws IOException, BrokenBarrierException, InterruptedException {
+    void insertAllRepoMetrics() throws BrokenBarrierException, IOException, InterruptedException {
+        // 更新所有仓库的 OpenDigger 指标数据
         syncDataBase.insertAllRepoMetrics();
     }
 

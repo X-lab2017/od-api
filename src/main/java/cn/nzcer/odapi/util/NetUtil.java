@@ -1,16 +1,10 @@
 package cn.nzcer.odapi.util;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +17,18 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class NetUtil {
-    static OkHttpClient client = new OkHttpClient.Builder().readTimeout(100, TimeUnit.SECONDS).build();
+    //读取超时为500s
+    private static final long READ_TIMEOUT = 500;
+    //写入超时为500s
+    private static final long WRITE_TIMEOUT = 500;
+    //连接超时为500s
+    private static final long CONNECT_TIMEOUT = 500;
+    static OkHttpClient client = new OkHttpClient.Builder()
+            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .build();
+
     // 同步请求
     public static JSONObject doGet(String url) throws IOException {
         Request request = new Request.Builder()
@@ -56,27 +61,5 @@ public class NetUtil {
             }
         }
     }
-
-
-    // 异步请求
-    //public static void asyncRequest(String url) {
-    //    Request request = new Request.Builder().url(url).build();
-    //    client.newCall(request).enqueue(new Callback() {
-    //        @Override
-    //        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-    //            e.printStackTrace();
-    //        }
-    //
-    //        @Override
-    //        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-    //            if (!response.isSuccessful()) {
-    //                throw new IOException("Unexpected code " + response);
-    //            } else {
-    //                String res = response.body().string();
-    //                System.out.println(JSONObject.parseObject(res));
-    //            }
-    //        }
-    //    });
-    //}
 
 }
