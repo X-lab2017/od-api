@@ -2,9 +2,9 @@ server:
   port: 8080
 spring:
   redis:
-    host: localhost
-    port: 6380
-    password: password123
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
     database: 0
     lettuce:
       pool:
@@ -14,9 +14,9 @@ spring:
         min-idle: 0
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    username: root
-    password: password123
-    url: jdbc:mysql://localhost:3306/od_api?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    url: ${MYSQL_URL}
     hikari:
       minimumIdle: 10
       maximum-pool-size: 60
@@ -35,16 +35,16 @@ github:
   tokens:
     - id: 1
       owner: "zhicheng"
-      token: "ghp_token1"
+      token: ${NZC_TOKEN}
     - id: 2
       owner: "tyn"
-      token: "ghp_token2"
+      token: ${TYN_TOKEN}
     - id: 3
       owner: "zhiwei"
-      token: "ghp_token3"
+      token: ${ZZW_TOKEN}
     - id: 4
       owner: "xiaoya"
-      token: "ghp_token4"
+      token: ${XXY_TOKEN}
     - id: 5
       owner: "zehua"
-      token: "ghp_token5"
+      token: ${LZH_TOKEN}
