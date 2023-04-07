@@ -47,6 +47,7 @@ jobs:
           mvn -B package --file pom.xml -Dmaven.test.skip=true
           pwd
           env
+          java -jar target/od-api-0.0.1-SNAPSHOT.jar
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -58,23 +59,6 @@ jobs:
           context: .
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          build-args: |
-            MYSQL_URL=${{ secrets.MYSQL_URL }}
-            MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
-            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-            REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PORT=${{ secrets.REDIS_PORT }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            NZC_TOKEN=${{ secrets.NZC_TOKEN }}
-            TYN_TOKEN=${{ secrets.TYN_TOKEN }}
-            ZZW_TOKEN=${{ secrets.ZZW_TOKEN }}
-            XXY_TOKEN=${{ secrets.XXY_TOKEN }}
-            LZH_TOKEN=${{ secrets.LZH_TOKEN }}
-            DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-            DOCKER_PASSWORD=${{ secrets.DOCKERHUB_TOKEN }}
-            REGISTRY=docker.io
-            IMAGE_NAME=ning2516085027/od-api
-            IMAGE_TAG=latest
       - name: Deploy with Docker
         uses: appleboy/ssh-action@master
         with:
