@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -164,7 +163,9 @@ public class SyncDataBase {
             repoCnt++;
         }
         countDownLatch.await();
-        log.info("定时任务完成:" + new Date());
+        log.info("仓库的数量: " + String.valueOf(allRepo.size()));
+        log.info("已执行完的仓库数量：" + executor.getCompletedTaskCount());
+        log.info("所有子线程执行完毕");
         FileWriter writer = new FileWriter("output.txt");
         for (String str : errorRepos) {
             writer.write(str + System.lineSeparator());
@@ -174,7 +175,7 @@ public class SyncDataBase {
 
 
     // 自定义线程池
-    private static ExecutorService executor = new ThreadPoolExecutor(20,
+    private static ThreadPoolExecutor executor = new ThreadPoolExecutor(20,
             100,
             10,
             TimeUnit.MICROSECONDS,
@@ -210,6 +211,8 @@ public class SyncDataBase {
             });
         }
         countDownLatch.await();
+        log.info("仓库的数量: " + String.valueOf(repoInfo.size()));
+        log.info("已执行完的仓库数量：" + executor.getCompletedTaskCount());
         log.info("所有子线程执行完毕");
     }
 
@@ -238,7 +241,7 @@ public class SyncDataBase {
             list.add(r1);
             list.add(r2);
             repoStatisticService.insertBatchRepoStatistic(list);
-            log.info(Thread.currentThread().getName() + " 成功插入数据：" + orgName + "/" + repoName);
+            log.info(Thread.currentThread().getName() + " 成功插入 star/fork 数据：" + orgName + "/" + repoName);
             list.clear();
         }
     }
@@ -287,7 +290,7 @@ public class SyncDataBase {
             return;
         }
         repoMetricService.insertBatchRepoMetric(repoMetricList);
-        log.info(Thread.currentThread().getName() + " 成功插入数据：" + orgName + "/" + repoName);
+        log.info(Thread.currentThread().getName() + " 成功插入指标数据：" + orgName + "/" + repoName);
     }
 
     /**

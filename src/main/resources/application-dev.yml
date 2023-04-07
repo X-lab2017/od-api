@@ -45,3 +45,6 @@ github:
     - id: 4
       owner: "xiaoya"
       token: "ghp_token4"
+    - id: 5
+      owner: "zehua"
+      token: "ghp_token5"

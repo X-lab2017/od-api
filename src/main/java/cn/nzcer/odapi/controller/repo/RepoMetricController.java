@@ -1,11 +1,9 @@
 package cn.nzcer.odapi.controller.repo;
 
-import cn.nzcer.odapi.dto.ResultData;
 import cn.nzcer.odapi.util.NetUtil;
 import cn.nzcer.odapi.util.StringUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,6 +32,7 @@ public class RepoMetricController {
         JSONObject jo = redisTemplate.opsForValue().get(repoUrl);
         if (jo == null) {
             jo = NetUtil.doGet(repoUrl);
+            redisTemplate.opsForValue().set(repoUrl,jo,12L, TimeUnit.HOURS);
         }
         JSONArray ja = new JSONArray();
         jo.forEach((key, value) -> {
@@ -46,7 +44,6 @@ public class RepoMetricController {
             cur.put("value", value);
             ja.add(cur);
         });
-        redisTemplate.opsForValue().set(repoUrl,jo,12L, TimeUnit.HOURS);
         return ja;
         //return ResultData.success(ja);
     }

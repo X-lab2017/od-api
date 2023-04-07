@@ -32,6 +32,7 @@ public class UserMetricController {
         JSONObject jo = redisTemplate.opsForValue().get(userUrl);
         if (jo == null) {
             jo = NetUtil.doGet(userUrl);
+            redisTemplate.opsForValue().set(userUrl,jo,12L, TimeUnit.HOURS);
         }
         JSONArray ja = new JSONArray();
         jo.forEach((key, value) -> {
@@ -42,7 +43,6 @@ public class UserMetricController {
             cur.put("value", value);
             ja.add(cur);
         });
-        redisTemplate.opsForValue().set(userUrl,jo,12L, TimeUnit.HOURS);
         return ResultData.success(ja);
     }
 }
