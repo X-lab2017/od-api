@@ -1,6 +1,7 @@
 name: Publish SpringBoot with Maven
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -23,7 +24,7 @@ jobs:
       # GitHub API Token
       NZC_TOKEN: ${{ secrets.NZC_TOKEN }}
       TYN_TOKEN: ${{ secrets.TYN_TOKEN }}
-      ZZW_TOKEN: ${{ secrets.ZZY_TOKEN }}
+      ZZW_TOKEN: ${{ secrets.ZZW_TOKEN }}
       XXY_TOKEN: ${{ secrets.XXY_TOKEN }}
       LZH_TOKEN: ${{ secrets.LZH_TOKEN }}
       # Docker Image
