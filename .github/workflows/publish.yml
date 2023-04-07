@@ -1,12 +1,15 @@
 name: Publish SpringBoot with Maven
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: NZC-ENV
     # 定义环境变量
     env:
       # MySQL
