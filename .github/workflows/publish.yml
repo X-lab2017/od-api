@@ -89,4 +89,5 @@ jobs:
             docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             docker run -p  8081:8080\
             --restart=always --name od-api\
-            --env=MYSQL_URL=${{ secrets.MYSQL_URL }}\ -d ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            --env=MYSQL_URL=${{ secrets.MYSQL_URL }}\ 
+            -d ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
