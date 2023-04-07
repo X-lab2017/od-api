@@ -1,31 +1,18 @@
 name: Publish SpringBoot with Maven
 
 on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: NZC-ENV
     # 定义环境变量
     env:
-      # MySQL
-      MYSQL_URL: ${{ secrets.MYSQL_URL }}
-      MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
-      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-      # Redis
-      REDIS_HOST: ${{ secrets.REDIS_HOST }}
-      REDIS_PORT: ${{ secrets.REDIS_PORT }}
-      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-      # GitHub API Token
-      NZC_TOKEN: ${{ secrets.NZC_TOKEN }}
-      TYN_TOKEN: ${{ secrets.TYN_TOKEN }}
-      ZZY_TOKEN: ${{ secrets.ZZY_TOKEN }}
-      XXY_TOKEN: ${{ secrets.XXY_TOKEN }}
-      LZH_TOKEN: ${{ secrets.LZH_TOKEN }}
-      # Docker Image
-      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
       REGISTRY: docker.io
       IMAGE_NAME: ning2516085027/od-api
       IMAGE_TAG: latest
@@ -42,6 +29,7 @@ jobs:
         run: |
           mvn -B package --file pom.xml -Dmaven.test.skip=true
           pwd
+          env
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -54,14 +42,20 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
       - name: Deploy with Docker
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
+          # Method one：
+          # script: |
+          #  cd /project/od-api
+          #  ./start.sh
+          # Method two
           script: |
             docker rm -f od-api
             docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            docker run -d -p 8081:8080 --restart=always --name od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker run -e MYSQL_URL=${{ secrets.MYSQL_URL }} -e MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }} -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} -e REDIS_HOST=${{ secrets.REDIS_HOST }} -e REDIS_PORT=${{ secrets.REDIS_PORT }} -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} -e NZC_TOKEN=${{ secrets.NZC_TOKEN }} -e TYN_TOKEN=${{ secrets.TYN_TOKEN }} -e ZZW_TOKEN=${{ secrets.ZZW_TOKEN }} -e XXY_TOKEN=${{ secrets.XXY_TOKEN }} -e LZH_TOKEN=${{ secrets.LZH_TOKEN }} -d -p  8081:8080 --restart=always --name=od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            
