@@ -23,7 +23,7 @@ jobs:
       # GitHub API Token
       NZC_TOKEN: ${{ secrets.NZC_TOKEN }}
       TYN_TOKEN: ${{ secrets.TYN_TOKEN }}
-      ZZY_TOKEN: ${{ secrets.ZZY_TOKEN }}
+      ZZW_TOKEN: ${{ secrets.ZZY_TOKEN }}
       XXY_TOKEN: ${{ secrets.XXY_TOKEN }}
       LZH_TOKEN: ${{ secrets.LZH_TOKEN }}
       # Docker Image
