@@ -1,0 +1,64 @@
+name: Publish SpringBoot with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # 定义环境变量
+    env:
+      # MySQL
+      MYSQL_URL: ${{ secrets.MYSQL_URL }}
+      MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      # Redis
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+      # GitHub API Token
+      NZC_TOKEN: ${{ secrets.NZC_TOKEN }}
+      TYN_TOKEN: ${{ secrets.TYN_TOKEN }}
+      ZZY_TOKEN: ${{ secrets.ZZY_TOKEN }}
+      XXY_TOKEN: ${{ secrets.XXY_TOKEN }}
+      LZH_TOKEN: ${{ secrets.LZH_TOKEN }}
+      # Docker Image
+      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      REGISTRY: docker.io
+      IMAGE_NAME: ning2516085027/od-api
+      IMAGE_TAG: latest
+    # 定义步骤
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: |
+          mvn -B package --file pom.xml -Dmaven.test.skip=true
+          pwd
+      - name: Build Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+      - name: Deploy with Docker
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            docker rm -f od-api
+            docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker run -d -p 8081:8080 --restart=always --name od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
