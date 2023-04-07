@@ -87,7 +87,7 @@ jobs:
             docker rm -f od-api
             docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            docker run -d -p  8081:8080\
-            --restart=always --name od-api\
-            --env=MYSQL_URL=${{ secrets.MYSQL_URL }}\ 
+            docker run -d -p  8081:8080 \
+            --restart=always --name od-api \
+            --env=MYSQL_URL=${{ secrets.MYSQL_URL }} \ 
             ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
