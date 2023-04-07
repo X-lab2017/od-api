@@ -3,7 +3,7 @@ server:
 spring:
   redis:
     host: ${REDIS_HOST}
-    port: ${REDIS_PORT}
+    port: 6780
     password: ${REDIS_PASSWORD}
     database: 0
     lettuce:
