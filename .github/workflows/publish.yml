@@ -84,6 +84,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             pwd
+            ls -al
             cd /projects/od-api
             ./start.sh
             
