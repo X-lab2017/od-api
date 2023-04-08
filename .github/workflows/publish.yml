@@ -88,7 +88,7 @@ jobs:
             docker rm -f od-api
             docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            docker run -e MYSQL_URL=${{ env.MYSQL_URL }} -e MYSQL_USERNAME=${{ env.MYSQL_USERNAME }} -e MYSQL_PASSWORD=${{ env.MYSQL_PASSWORD }} -e REDIS_HOST=${{ env.REDIS_HOST }} -e REDIS_PORT=${{ env.REDIS_PORT }} -e REDIS_PASSWORD=${{ env.REDIS_PASSWORD }} -e NZC_TOKEN=${{ env.NZC_TOKEN }} --env TYN_TOKEN=${{ env.TYN_TOKEN }} -e ZZW_TOKEN=${{ env.ZZW_TOKEN }} -e XXY_TOKEN=${{ env.XXY_TOKEN }} -e LZH_TOKEN=${{ env.LZH_TOKEN }} -e DOCKER_USERNAME=${{ env.DOCKERHUB_USERNAME }} -e DOCKER_PASSWORD=${{ env.DOCKERHUB_TOKEN }} -e REGISTRY=docker.io -e IMAGE_NAME=ning2516085027/od-api -e IMAGE_TAG=latest -d -p  8081:8080 --restart=always --name od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker run -d -p  8081:8080 --restart=always --name od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             
             
             
