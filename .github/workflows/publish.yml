@@ -87,7 +87,7 @@ jobs:
             docker rm -f od-api
             docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            docker run --env MYSQL_URL=${{ env.MYSQL_URL }} --env MYSQL_USERNAME=${{ env.MYSQL_USERNAME }} --env MYSQL_PASSWORD=${{ env.MYSQL_PASSWORD }} --env REDIS_HOST=${{ env.REDIS_HOST }} --env REDIS_PORT=${{ env.REDIS_PORT }} --env REDIS_PASSWORD=${{ env.REDIS_PASSWORD }} --env NZC_TOKEN=${{ env.NZC_TOKEN }} --env TYN_TOKEN=${{ env.TYN_TOKEN }} --env ZZW_TOKEN=${{ env.ZZW_TOKEN }} --env XXY_TOKEN=${{ env.XXY_TOKEN }} --env LZH_TOKEN=${{ env.LZH_TOKEN }} --env DOCKER_USERNAME=${{ env.DOCKERHUB_USERNAME }} --env DOCKER_PASSWORD=${{ env.DOCKERHUB_TOKEN }} --env REGISTRY=docker.io --env IMAGE_NAME=ning2516085027/od-api --env IMAGE_TAG=latest -d -p  8081:8080 --restart=always --name od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker run --env MYSQL_URL=$MYSQL_URL --env MYSQL_USERNAME=$MYSQL_USERNAME --env MYSQL_PASSWORD=${{ env.MYSQL_PASSWORD }} --env REDIS_HOST=${{ env.REDIS_HOST }} --env REDIS_PORT=${{ env.REDIS_PORT }} --env REDIS_PASSWORD=${{ env.REDIS_PASSWORD }} --env NZC_TOKEN=${{ env.NZC_TOKEN }} --env TYN_TOKEN=${{ env.TYN_TOKEN }} --env ZZW_TOKEN=${{ env.ZZW_TOKEN }} --env XXY_TOKEN=${{ env.XXY_TOKEN }} --env LZH_TOKEN=${{ env.LZH_TOKEN }} --env DOCKER_USERNAME=${{ env.DOCKERHUB_USERNAME }} --env DOCKER_PASSWORD=${{ env.DOCKERHUB_TOKEN }} --env REGISTRY=docker.io --env IMAGE_NAME=ning2516085027/od-api --env IMAGE_TAG=latest -d -p  8081:8080 --restart=always --name od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             
             
             
