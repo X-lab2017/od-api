@@ -58,6 +58,7 @@ jobs:
           context: .
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          # dprecated
           #build-args: |
             #MYSQL_URL=${{ secrets.MYSQL_URL }}
             #MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
@@ -82,8 +83,14 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
+          # Method one：
+          # script: |
+          #  cd /project/od-api
+          #  ./start.sh
+          # Method two
           script: |
-            cd /project/od-api
-            ./start.sh
-            
+            docker rm -f od-api
+            docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker run -e MYSQL_URL=${{ secrets.MYSQL_URL }} -e MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }} -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} -e REDIS_HOST=${{ secrets.REDIS_HOST }} -e REDIS_PORT=${{ secrets.REDIS_PORT }} -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} -e NZC_TOKEN=${{ secrets.NZC_TOKEN }} -e TYN_TOKEN=${{ secrets.TYN_TOKEN }} -e ZZW_TOKEN=${{ secrets.ZZW_TOKEN }} -e XXY_TOKEN=${{ secrets.XXY_TOKEN }} -e LZH_TOKEN=${{ secrets.LZH_TOKEN }} -d -p  8081:8080 --restart=always --name=od-api ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
             
