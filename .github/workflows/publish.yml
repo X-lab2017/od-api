@@ -83,6 +83,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
+            export MYSQL_URL=${{ secret.MYSQL_URL }}
             env
             docker rm -f od-api
             docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
