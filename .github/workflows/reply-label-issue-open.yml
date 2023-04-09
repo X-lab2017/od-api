@@ -14,5 +14,6 @@ jobs:
         uses: actions-cool/issues-helper@v2
         if: ${{ !github.event.comment.pull_request.pull_request }}
         with:
+          token: ${{secrets.GITHUB_TOKEN}}
           actions: 'add-labels'
           labels: 'waiting for repliers'
