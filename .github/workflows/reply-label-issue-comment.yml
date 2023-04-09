@@ -14,14 +14,12 @@ jobs:
       - name: Add require handle label
         uses: actions-cool/issues-helper@v2
         with:
-          token: ${{secrets.GITHUB_TOKEN}}
           actions: 'add-labels'
           labels: 'waiting for repliers'
 
       - name: Remove require reply label
         uses: actions-cool/issues-helper@v2
         with:
-          token: ${{secrets.GITHUB_TOKEN}}
           actions: 'remove-labels'
           labels: 'waiting for author'
 
