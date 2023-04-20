@@ -139,11 +139,16 @@ public class SyncDataBase {
     // 每月 3 日凌晨 1 点启动定时任务更新仓库的所有指标数据
     @Scheduled(cron = "0 0 1 3 * ?")
     public void insertAllRepoMetrics() throws IOException, BrokenBarrierException, InterruptedException {
+        // RepoMetrics 线程池
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(20,
+                100,
+                10,
+                TimeUnit.MICROSECONDS,
+                new LinkedBlockingQueue<Runnable>());
         log.info("Repo Metrics 定时任务启动:" + new Date());
         log.info("清空 repo_metric 表");
         repoMetricService.truncateRepoMetric();
         Set<String> allRepo = getAllRepo();
-        log.info("获取到的 repo 数量为: " + allRepo.size());
         List<String> tokens = getTokens();
         List<String> errorRepos = new ArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(allRepo.size());
@@ -171,15 +176,10 @@ public class SyncDataBase {
             writer.write(str + System.lineSeparator());
         }
         writer.close();
+        executor.shutdown();
     }
 
 
-    // 自定义线程池
-    private static ThreadPoolExecutor executor = new ThreadPoolExecutor(20,
-            100,
-            10,
-            TimeUnit.MICROSECONDS,
-            new LinkedBlockingQueue<Runnable>());
 
     /**
      * 插入所有仓库的 star 和 fork 数据
@@ -188,11 +188,16 @@ public class SyncDataBase {
      */
     @Scheduled(cron = "0 0 5 * * ?")
     public void insertAllRepoStarAndFork() throws InterruptedException, BrokenBarrierException {
+        // RepoStarAndFork 线程池
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(20,
+                100,
+                10,
+                TimeUnit.MICROSECONDS,
+                new LinkedBlockingQueue<Runnable>());
         log.info("Repo Statistic 定时任务启动:" + new Date());
         log.info("清空  repo_statistic 表");
         repoStatisticService.truncateRepoStatistic();
         List<Map<String, String>> repoInfo = repoMetricService.getRepoInfo();
-        log.info("仓库的数量: " + String.valueOf(repoInfo.size()));
         List<String> tokens = getTokens();
         CountDownLatch countDownLatch = new CountDownLatch(repoInfo.size());
         int totalRepo = 0;
@@ -214,6 +219,7 @@ public class SyncDataBase {
         log.info("仓库的数量: " + String.valueOf(repoInfo.size()));
         log.info("已执行完的仓库数量：" + executor.getCompletedTaskCount());
         log.info("所有子线程执行完毕");
+        executor.shutdown();
     }
 
     /**
