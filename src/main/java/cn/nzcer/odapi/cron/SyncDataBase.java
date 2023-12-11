@@ -117,7 +117,13 @@ public class SyncDataBase {
     public Set<String> parseRepo(String url, int count) throws IOException {
         JSONObject jsonObject = NetUtil.doGet(url);
         Set<String> repoNames = new HashSet<>();
-        JSONArray jsonArray = jsonObject.getJSONArray("data");
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = jsonObject.getJSONArray("data");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return repoNames;
+        }
         int cnt = 0;
         for (int i = 0; i < jsonArray.size(); i++) {
             String repoName = jsonArray.getJSONObject(i).getJSONObject("item").getString("name");
